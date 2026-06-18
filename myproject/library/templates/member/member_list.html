@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}會員管理 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title">
+            <i class="fas fa-users"></i> 會員管理
+        </h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'library:member_create' %}" class="btn btn-success btn-lg">
+            <i class="fas fa-user-plus"></i> 新增會員
+        </a>
+    </div>
+</div>
+
+<!-- 搜尋和過濾表單 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-search"></i> 搜尋與過濾
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" 
+                       placeholder="搜尋會員姓名、郵箱或電話..." 
+                       value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">全部狀態</option>
+                    <option value="active">正常</option>
+                    <option value="suspended">停權</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> 搜尋
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 會員列表 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 會員列表（共 {{ paginator.count }} 人）
+    </div>
+    <div class="card-body">
+        {% if members %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>名稱</th>
+                        <th>帳號</th>
+                        <th>郵箱</th>
+                        <th>電話</th>
+                        <th>狀態</th>
+                        <th>未繳罰款</th>
+                        <th>註冊日期</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr>
+                        <td>
+                            <strong>{{ member.user.get_full_name|default:"(無名稱)" }}</strong>
+                        </td>
+                        <td>{{ member.user.username }}</td>
+                        <td>{{ member.user.email }}</td>
+                        <td>{{ member.phone }}</td>
+                        <td>
+                            {% if member.status == 'active' %}
+                                <span class="badge bg-success">正常</span>
+                            {% else %}
+                                <span class="badge bg-danger">停權</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if member.outstanding_fine > 0 %}
+                                <span class="badge bg-warning">NT$ {{ member.outstanding_fine }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ member.registration_date|date:"Y-m-d" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'library:member_detail' member.pk %}" class="btn btn-outline-info" 
+                                   title="查看詳情">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'library:member_edit' member.pk %}" class="btn btn-outline-primary" 
+                                   title="編輯">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{% url 'library:member_toggle_status' member.pk %}" 
+                                      style="display:inline;" 
+                                      onsubmit="return confirm('確定要{% if member.status == 'active' %}停權{% else %}解鎖{% endif %}此會員嗎？');">
+                                    {% csrf_token %}
+                                    {% if member.status == 'active' %}
+                                        <button type="submit" class="btn btn-outline-warning btn-sm" title="停權">
+                                            <i class="fas fa-lock"></i>
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-outline-success btn-sm" title="解鎖">
+                                            <i class="fas fa-unlock"></i>
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分頁 -->
+        {% if is_paginated %}
+        <nav aria-label="分頁導航">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">首頁</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                        上一頁
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">首頁</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">上一頁</span>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        第 {{ page_obj.number }} / {{ paginator.num_pages }} 頁
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                        下一頁
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">末頁</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">下一頁</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">末頁</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+            <p class="text-muted">暫無會員記錄</p>
+            <a href="{% url 'library:member_create' %}" class="btn btn-success">
+                <i class="fas fa-user-plus"></i> 新增第一位會員
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

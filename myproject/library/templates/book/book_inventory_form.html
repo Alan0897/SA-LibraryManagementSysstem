@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}庫存調整 - {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h1 class="page-title">
+            <i class="fas fa-boxes"></i> 庫存調整
+        </h1>
+
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>圖書：</strong> {{ book.title }}<br>
+            <strong>作者：</strong> {{ book.author }}
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-warehouse"></i> 調整庫存數量
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- 總數量 -->
+                    <div class="mb-4">
+                        <label for="id_total_quantity" class="form-label">
+                            <strong>總數量</strong> <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            {{ form.total_quantity }}
+                            <span class="input-group-text">冊</span>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-lightbulb"></i>
+                            圖書館購入該書的總冊數。調整此數值通常用於新增或移除圖書。
+                        </small>
+                        {% if form.total_quantity.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.total_quantity.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <!-- 庫存數量（可借用） -->
+                    <div class="mb-4">
+                        <label for="id_available_quantity" class="form-label">
+                            <strong>庫存數量（可借用）</strong> <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            {{ form.available_quantity }}
+                            <span class="input-group-text">冊</span>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-lightbulb"></i>
+                            目前可借用的冊數。此數值應 ≤ 總數量。
+                        </small>
+                        {% if form.available_quantity.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.available_quantity.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 統計資訊 -->
+                    <div class="alert alert-light">
+                        <strong>統計資訊：</strong>
+                        <ul class="mb-0">
+                            <li>已借出：<span class="badge bg-warning">{{ book.total_quantity|add:"-book.available_quantity" }} 冊</span></li>
+                            <li>總購入：<span class="badge bg-secondary">{{ book.total_quantity }} 冊</span></li>
+                            <li>可借用：<span class="badge bg-success">{{ book.available_quantity }} 冊</span></li>
+                        </ul>
+                    </div>
+
+                    <!-- 提交按鈕 -->
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check"></i> 確認調整
+                        </button>
+                        <a href="{% url 'library:book_detail' book.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回詳情
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

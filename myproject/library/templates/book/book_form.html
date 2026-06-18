@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{% if form.instance.pk %}編輯圖書{% else %}新書建檔{% endif %} - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="page-title">
+            {% if form.instance.pk %}
+                <i class="fas fa-edit"></i> 編輯圖書
+            {% else %}
+                <i class="fas fa-plus-circle"></i> 新書建檔
+            {% endif %}
+        </h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- 書名 -->
+                    <div class="mb-3">
+                        <label for="id_title" class="form-label">
+                            書名 <span class="text-danger">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.title.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 作者與出版商 -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_author" class="form-label">
+                                作者 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.author }}
+                            {% if form.author.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.author.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_publisher" class="form-label">
+                                出版商 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.publisher }}
+                            {% if form.publisher.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.publisher.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- ISBN與分類 -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_isbn" class="form-label">
+                                ISBN <span class="text-danger">*</span>
+                            </label>
+                            {{ form.isbn }}
+                            {% if form.isbn.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.isbn.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_category" class="form-label">
+                                分類 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.category.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 總數量與庫存數量 -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_total_quantity" class="form-label">
+                                總數量 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.total_quantity }}
+                            {% if form.total_quantity.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.total_quantity.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">圖書館購入的總冊數</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_available_quantity" class="form-label">
+                                庫存數量 <span class="text-danger">*</span>
+                            </label>
+                            {{ form.available_quantity }}
+                            {% if form.available_quantity.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.available_quantity.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted">目前可借用的冊數</small>
+                        </div>
+                    </div>
+
+                    <!-- 狀態 -->
+                    <div class="mb-3">
+                        <label for="id_status" class="form-label">
+                            狀態 <span class="text-danger">*</span>
+                        </label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.status.errors.0 }}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            上架：圖書可對會員借出；下架：圖書不可借出
+                        </small>
+                    </div>
+
+                    <!-- 提交按鈕 -->
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> 
+                            {% if form.instance.pk %}
+                                更新圖書
+                            {% else %}
+                                新增圖書
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'library:book_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回列表
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

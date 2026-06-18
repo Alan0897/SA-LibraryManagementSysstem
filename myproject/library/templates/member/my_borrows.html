@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}我的借閱紀錄 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Page Title -->
+    <div class="page-title">
+        <h1>
+            <i class="fas fa-book-bookmark me-2"></i>我的借閱紀錄
+        </h1>
+    </div>
+
+    <!-- Member Info Card -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user-circle me-2"></i>會員資訊
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>會員名稱：</strong> {{ request.user.get_full_name|default:request.user.username }}</p>
+                            <p><strong>帳號：</strong> {{ request.user.username }}</p>
+                            <p><strong>電郵：</strong> {{ request.user.email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if member.phone %}
+                            <p><strong>電話：</strong> {{ member.phone }}</p>
+                            {% endif %}
+                            <p><strong>會員狀態：</strong> 
+                                {% if member.status == 'active' %}
+                                <span class="badge bg-success">正常</span>
+                                {% else %}
+                                <span class="badge bg-danger">停權</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>註冊日期：</strong> {{ member.registration_date|date:"Y-m-d" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-book fa-3x mb-3" style="color: #3498db;"></i>
+                    <h5 class="card-title">累計借閱</h5>
+                    <h2 class="text-primary">{{ total_borrows }}</h2>
+                    <p class="text-muted">本圖書</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-hourglass-half fa-3x mb-3" style="color: #f39c12;"></i>
+                    <h5 class="card-title">借閱中</h5>
+                    <h2 class="text-warning">{{ active_borrows }}</h2>
+                    <p class="text-muted">待歸還</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-calendar-times fa-3x mb-3" style="color: #e74c3c;"></i>
+                    <h5 class="card-title">逾期</h5>
+                    <h2 class="text-danger">{{ overdue_borrows }}</h2>
+                    <p class="text-muted">待清理</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-check-circle fa-3x mb-3" style="color: #27ae60;"></i>
+                    <h5 class="card-title">已歸還</h5>
+                    <h2 class="text-success">{{ returned_borrows }}</h2>
+                    <p class="text-muted">本圖書</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outstanding Fine Alert -->
+    {% if member.outstanding_fine > 0 %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>未繳罰款通知：</strong>
+        您有未繳納的罰款 <strong>NT$ {{ member.outstanding_fine }}</strong>。
+        請盡快清除罰款以便繼續使用借閱服務。
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <!-- Borrow Records Table -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-list me-2"></i>借閱記錄詳情
+            <span class="badge bg-secondary float-end">共 {{ total_borrows }} 筆</span>
+        </div>
+        <div class="table-responsive">
+            {% if borrow_records %}
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th><i class="fas fa-book me-2"></i>書名</th>
+                        <th><i class="fas fa-user-edit me-2"></i>作者</th>
+                        <th><i class="fas fa-calendar-check me-2"></i>借閱日期</th>
+                        <th><i class="fas fa-calendar-times me-2"></i>應還日期</th>
+                        <th><i class="fas fa-undo me-2"></i>實際歸還</th>
+                        <th><i class="fas fa-info-circle me-2"></i>狀態</th>
+                        <th><i class="fas fa-yen-sign me-2"></i>罰款</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in borrow_records %}
+                    <tr>
+                        <!-- Book Title -->
+                        <td>
+                            <strong>{{ record.book.title }}</strong><br>
+                            <small class="text-muted">ISBN: {{ record.book.isbn }}</small>
+                        </td>
+                        
+                        <!-- Author -->
+                        <td>{{ record.book.author }}</td>
+                        
+                        <!-- Borrow Date -->
+                        <td>{{ record.borrow_date|date:"Y-m-d" }}</td>
+                        
+                        <!-- Due Date -->
+                        <td>
+                            {% if record.status == 'borrowing' and record.due_date <= today %}
+                            <span class="badge bg-danger">
+                                {{ record.due_date|date:"Y-m-d" }}
+                                <i class="fas fa-exclamation-circle ms-1"></i>
+                            </span>
+                            {% elif record.status == 'borrowing' %}
+                            <span class="badge bg-warning">{{ record.due_date|date:"Y-m-d" }}</span>
+                            {% else %}
+                            {{ record.due_date|date:"Y-m-d" }}
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Return Date -->
+                        <td>
+                            {% if record.return_date %}
+                            {{ record.return_date|date:"Y-m-d" }}
+                            {% else %}
+                            <span class="text-muted">尚未歸還</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Status -->
+                        <td>
+                            {% if record.status == 'borrowing' %}
+                            <span class="badge bg-info">借閱中</span>
+                            {% elif record.status == 'returned' %}
+                            <span class="badge bg-success">已歸還</span>
+                            {% elif record.status == 'overdue' %}
+                            <span class="badge bg-danger">已逾期</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Fine -->
+                        <td>
+                            {% if record.overdue_fine > 0 %}
+                            <span class="badge bg-danger">NT$ {{ record.overdue_fine }}</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="alert alert-info m-3">
+                <i class="fas fa-info-circle me-2"></i>
+                您目前沒有任何借閱紀錄。
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Fine Summary -->
+    {% if member.outstanding_fine > 0 %}
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-exclamation-circle me-2"></i>未繳罰款總額
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-danger mb-3">NT$ {{ member.outstanding_fine }}</h2>
+                    <p class="text-muted">請儘快清除罰款，以免影響後續的借閱權限。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <div class="alert alert-success text-center">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>恭喜！</strong>您沒有任何未繳罰款。
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12">
+            <a href="{% url 'library:search_book' %}" class="btn btn-primary me-2">
+                <i class="fas fa-search me-2"></i>搜尋圖書
+            </a>
+            <a href="{% url 'library:home' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>返回首頁
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        color: white;
+        font-weight: bold;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f5f5f5;
+    }
+
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .page-title {
+        color: #2c3e50;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .page-title h1 {
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

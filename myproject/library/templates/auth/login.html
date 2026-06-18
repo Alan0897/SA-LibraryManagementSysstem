@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+
+{% block title %}登入 - 圖書借閱系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 200px);
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 400px;
+        padding: 2rem;
+    }
+
+    .login-card-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-card-header i {
+        font-size: 3rem;
+        color: #3498db;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .login-card-header h1 {
+        font-size: 2rem;
+        color: #2c3e50;
+        margin: 0;
+        font-weight: bold;
+    }
+
+    .login-card-header p {
+        color: #7f8c8d;
+        margin-top: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #ecf0f1;
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .form-group input::placeholder {
+        color: #bdc3c7;
+    }
+
+    .remember-me {
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .remember-me input[type="checkbox"] {
+        width: auto;
+        margin-right: 0.5rem;
+        cursor: pointer;
+    }
+
+    .remember-me label {
+        margin: 0;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+
+    .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    }
+
+    .login-btn:active {
+        transform: translateY(0);
+    }
+
+    .divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        color: #bdc3c7;
+        font-size: 0.9rem;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        display: inline-block;
+        width: 45%;
+        height: 1px;
+        background-color: #ecf0f1;
+        vertical-align: middle;
+        margin: 0 0.5rem;
+    }
+
+    .signup-link {
+        text-align: center;
+        color: #7f8c8d;
+        font-size: 0.95rem;
+    }
+
+    .signup-link a {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: bold;
+        transition: color 0.3s ease;
+    }
+
+    .signup-link a:hover {
+        color: #2980b9;
+        text-decoration: underline;
+    }
+
+    .form-errors {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 5px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        color: #721c24;
+    }
+
+    .form-errors ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .form-errors li {
+        margin-bottom: 0.5rem;
+    }
+
+    .info-box {
+        background-color: #d1ecf1;
+        border-left: 4px solid #0c5460;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 3px;
+        color: #0c5460;
+        font-size: 0.9rem;
+    }
+
+    .info-box i {
+        margin-right: 0.5rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .login-card {
+            margin: 1rem;
+            padding: 1.5rem;
+        }
+
+        .login-card-header i {
+            font-size: 2.5rem;
+        }
+
+        .login-card-header h1 {
+            font-size: 1.7rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <!-- Header -->
+        <div class="login-card-header">
+            <i class="fas fa-lock"></i>
+            <h1>登入</h1>
+            <p>輸入您的帳號密碼</p>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <strong>提示：</strong>請使用您的帳號與密碼登入系統。預設帳號為 admin。
+        </div>
+
+        <!-- Login Form -->
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <!-- Display Form Errors -->
+            {% if form.non_field_errors %}
+            <div class="form-errors">
+                <ul>
+                    {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Username Field -->
+            <div class="form-group">
+                <label for="id_username">
+                    <i class="fas fa-user me-2"></i>帳號
+                </label>
+                <input 
+                    type="text" 
+                    name="username" 
+                    id="id_username" 
+                    class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                    placeholder="請輸入您的帳號"
+                    autofocus
+                    required
+                />
+                {% if form.username.errors %}
+                <small class="text-danger">
+                    {% for error in form.username.errors %}
+                    {{ error }}
+                    {% endfor %}
+                </small>
+                {% endif %}
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="id_password">
+                    <i class="fas fa-key me-2"></i>密碼
+                </label>
+                <input 
+                    type="password" 
+                    name="password" 
+                    id="id_password" 
+                    class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                    placeholder="請輸入您的密碼"
+                    required
+                />
+                {% if form.password.errors %}
+                <small class="text-danger">
+                    {% for error in form.password.errors %}
+                    {{ error }}
+                    {% endfor %}
+                </small>
+                {% endif %}
+            </div>
+
+            <!-- Remember Me -->
+            <div class="remember-me">
+                <input 
+                    type="checkbox" 
+                    name="remember" 
+                    id="id_remember"
+                />
+                <label for="id_remember">記住我的帳號</label>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt me-2"></i>登入系統
+            </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">或</div>
+
+        <!-- Signup Link -->
+        <div class="signup-link">
+            <p>
+                還沒有帳號？
+                <a href="{% url 'library:home' %}">返回首頁</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

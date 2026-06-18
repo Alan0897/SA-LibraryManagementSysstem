@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}圖書管理 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h1 class="page-title mb-0">
+            <i class="fas fa-book text-primary"></i> 圖書館館藏
+        </h1>
+        <small class="text-muted">共 {{ paginator.count }} 本</small>
+    </div>
+
+    {% if request.user.is_staff %}
+    <div>
+        <a href="{% url 'library:book_create' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus-circle me-2"></i> 新書建檔
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 搜尋 -->
+<div class="card mb-4 border-0 shadow-sm rounded-3">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" placeholder="搜尋書名、作者或 ISBN..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">全部狀態</option>
+                    <option value="available">上架</option>
+                    <option value="unavailable">下架</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-grid">
+                <button type="submit" class="btn btn-outline-secondary btn-outline-soft">
+                    <i class="fas fa-search me-2"></i> 搜尋
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Grid Cards -->
+{% if books %}
+<div class="row g-4">
+    {% for book in books %}
+    <div class="col-sm-6 col-md-4 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm rounded-3">
+            <div class="card-body d-flex flex-column">
+                <div class="d-flex align-items-center mb-3 gap-3">
+                    <div class="flex-shrink-0 bg-light rounded-3 d-flex align-items-center justify-content-center"
+                         style="width:72px;height:96px;border-radius:8px;background:linear-gradient(180deg,rgba(217,119,6,0.08),rgba(30,58,138,0.03));">
+                        <i class="fas fa-book-open fa-2x text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 fw-bold">{{ book.title }}</h6>
+                        <small class="text-muted">{{ book.author }}</small>
+                    </div>
+                </div>
+
+                <div class="mt-auto">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <span class="badge bg-info me-1">{{ book.category }}</span>
+                            {% if book.status == 'available' %}
+                                <span class="badge badge-soft-success">上架</span>
+                            {% else %}
+                                <span class="badge badge-soft-danger">下架</span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">可借: {{ book.available_quantity }}</small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'library:book_detail' book.pk %}" class="btn btn-outline-info btn-sm w-100">
+                            <i class="fas fa-eye me-1"></i> 詳情
+                        </a>
+                        {% if request.user.is_staff %}
+                        <a href="{% url 'library:book_edit' book.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit me-1"></i> 編輯
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 分頁 -->
+{% if is_paginated %}
+<nav aria-label="分頁導航" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一頁</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">上一頁</span></li>
+        {% endif %}
+
+        <li class="page-item active"><span class="page-link">第 {{ page_obj.number }} / {{ paginator.num_pages }} 頁</span></li>
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">下一頁</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">下一頁</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+    <p class="text-muted">暫無圖書記錄</p>
+    {% if request.user.is_staff %}
+    <a href="{% url 'library:book_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> 新增第一本圖書
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

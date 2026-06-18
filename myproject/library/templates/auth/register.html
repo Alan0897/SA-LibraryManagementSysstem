@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}新會員註冊 - 圖書館管理系統{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg">
+                <!-- 卡片頭部 -->
+                <div class="card-header bg-primary text-white py-4">
+                    <div class="text-center">
+                        <h2 class="card-title mb-0">
+                            <i class="fas fa-user-plus"></i> 新會員註冊
+                        </h2>
+                    </div>
+                </div>
+
+                <!-- 卡片主體 -->
+                <div class="card-body p-4">
+                    <!-- 錯誤和成功訊息 -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{{ message.tags|default:'info' }}-circle"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- 表單 -->
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- 用戶名 -->
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-user"></i> 用戶名
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                                id="{{ form.username.id_for_label }}"
+                                name="username"
+                                value="{{ form.username.value|default:'' }}"
+                                placeholder="請輸入用戶名（3-30字符）"
+                                required
+                            >
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.username.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                只能含字母、數字和下劃線
+                            </small>
+                        </div>
+
+                        <!-- 郵箱 -->
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-envelope"></i> 電子郵件
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="email" 
+                                class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                                id="{{ form.email.id_for_label }}"
+                                name="email"
+                                value="{{ form.email.value|default:'' }}"
+                                placeholder="请輸入有效的電子郵件"
+                                required
+                            >
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.email.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 密碼 -->
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-lock"></i> 密碼
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="password" 
+                                class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                                id="{{ form.password1.id_for_label }}"
+                                name="password1"
+                                placeholder="請設定安全密碼（最少8個字符）"
+                                required
+                            >
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password1.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-1">
+                                密碼需至少8個字符，並包含大小寫字母、數字和特殊符號
+                            </small>
+                        </div>
+
+                        <!-- 確認密碼 -->
+                        <div class="mb-3">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-lock-open"></i> 確認密碼
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="password" 
+                                class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                                id="{{ form.password2.id_for_label }}"
+                                name="password2"
+                                placeholder="再次輸入密碼確認"
+                                required
+                            >
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password2.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- 姓名欄 -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-id-card"></i> 名字
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control"
+                                    id="{{ form.first_name.id_for_label }}"
+                                    name="first_name"
+                                    value="{{ form.first_name.value|default:'' }}"
+                                    placeholder="名字"
+                                >
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-id-card"></i> 姓氏
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control"
+                                    id="{{ form.last_name.id_for_label }}"
+                                    name="last_name"
+                                    value="{{ form.last_name.value|default:'' }}"
+                                    placeholder="姓氏"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- 電話 -->
+                        <div class="mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-phone"></i> 電話號碼
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="tel" 
+                                class="form-control {% if form.phone.errors %}is-invalid{% endif %}"
+                                id="{{ form.phone.id_for_label }}"
+                                name="phone"
+                                value="{{ form.phone.value|default:'' }}"
+                                placeholder="請輸入有效的電話號碼"
+                                required
+                            >
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.phone.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- 同意條款 -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input 
+                                    class="form-check-input {% if form.agree_terms.errors %}is-invalid{% endif %}"
+                                    type="checkbox" 
+                                    id="{{ form.agree_terms.id_for_label }}"
+                                    name="agree_terms"
+                                    {% if form.agree_terms.value %}checked{% endif %}
+                                    required
+                                >
+                                <label class="form-check-label" for="{{ form.agree_terms.id_for_label }}">
+                                    我同意
+                                    <a href="#" target="_blank" class="text-decoration-none">
+                                        服務條款
+                                    </a>
+                                    和
+                                    <a href="#" target="_blank" class="text-decoration-none">
+                                        隱私政策
+                                    </a>
+                                    <span class="text-danger">*</span>
+                                </label>
+                            </div>
+                            {% if form.agree_terms.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.agree_terms.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 通用表單錯誤 -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-triangle"></i> 註冊失敗：
+                                {% for error in form.non_field_errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- 提交按鈕 -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                <i class="fas fa-user-check"></i> 完成註冊
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <!-- 登入連結 -->
+                    <div class="text-center">
+                        <p class="text-muted mb-0">
+                            已有帳號？
+                            <a href="{% url 'login' %}" class="text-decoration-none fw-bold">
+                                <i class="fas fa-sign-in-alt"></i> 立即登入
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部提示 -->
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle"></i>
+                <strong>溫馨提示：</strong> 註冊成功後，您將自動登入並重定向到首頁。如有任何問題，請聯繫管理員。
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 0.75rem;
+    }
+
+    .form-label {
+        color: #28a745;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .btn-primary {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-primary:hover {
+        background-color: #218838;
+        border-color: #218838;
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}

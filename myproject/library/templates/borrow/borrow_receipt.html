@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}借閱收據 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- 成功標誌 -->
+        <div class="text-center mb-4">
+            <div style="font-size: 3rem; color: #28a745;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h1 class="my-3">借閱成功</h1>
+            <p class="text-muted">您的借閱紀錄已建立</p>
+        </div>
+
+        <!-- 收據卡片 -->
+        <div class="card mb-4" id="receipt-card">
+            <div class="card-header bg-success">
+                <i class="fas fa-receipt"></i> 借閱收據
+            </div>
+            <div class="card-body">
+                <!-- 會員資訊 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="text-muted">會員資訊</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>姓名：</strong> {{ member_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>郵箱：</strong> {{ member_email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>電話：</strong> {{ member.phone }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- 圖書資訊 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="text-muted">圖書資訊</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>書名：</strong> {{ book.title }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>借閱紀錄 ID：</strong> #{{ borrow_record.pk }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>作者：</strong> {{ book.author }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>ISBN：</strong> {{ book.isbn }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>出版商：</strong> {{ book.publisher }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>分類：</strong> {{ book.category }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- 借閱期限 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="text-muted">借閱期限</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>借閱日期：</strong></p>
+                        <p class="display-6" style="font-size: 1.5rem; color: #3498db;">
+                            {{ borrow_record.borrow_date|date:"Y-m-d H:i" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>應還日期：</strong></p>
+                        <p class="display-6" style="font-size: 1.5rem; color: #e74c3c;">
+                            {{ borrow_record.due_date|date:"Y-m-d" }}
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- 提示信息 -->
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>重要提醒：</strong>
+                    <ul class="mb-0">
+                        <li>請於應還日期前歸還圖書</li>
+                        <li>逾期將收取罰款，每天 NT$ 10 元</li>
+                        <li>如有遺失，按原價賠償</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="d-grid gap-2">
+            <a href="{% url 'library:home' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-arrow-left"></i> 返回首頁
+            </a>
+            <a href="{% url 'library:borrow_create' %}" class="btn btn-outline-primary">
+                <i class="fas fa-plus"></i> 繼續建立借閱
+            </a>
+            <a href="{% url 'library:member_detail' member.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-user-circle"></i> 查看會員詳情
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    /* 隱藏頁面上所有元件 */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* 顯示收據卡片與其內部內容 */
+    #receipt-card, #receipt-card * {
+        visibility: visible !important;
+    }
+
+    /* 將收據卡片置中並擴展到適合列印的寬度 */
+    #receipt-card {
+        position: absolute !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: 10mm !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: 180mm !important; /* 適合 A4 */
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        background: #fff !important;
+    }
+
+    /* 隱藏所有按鈕以避免被列印出來（備援） */
+    .btn, button, a.btn {
+        display: none !important;
+    }
+
+    /* 去除可能的背景與陰影，並避免分頁中斷 */
+    #receipt-card .card-header, #receipt-card .card-body {
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+    #receipt-card { page-break-inside: avoid !important; }
+
+    /* 調整頁邊距 */
+    @page { margin: 10mm; }
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}借閱/逾期清單報表 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="fas fa-list"></i> 借閱/逾期清單報表
+        </h1>
+        <p class="text-muted">管理員專用：查看和篩選借閱紀錄</p>
+    </div>
+</div>
+
+<!-- 篩選按鈕 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-filter"></i> 篩選
+    </div>
+    <div class="card-body">
+        <div class="btn-group w-100" role="group">
+            <a href="?filter=all" class="btn btn-outline-secondary {% if filter_type == 'all' %}active{% endif %}">
+                <i class="fas fa-list"></i> 所有記錄
+                <span class="badge bg-secondary">{{ all_count }}</span>
+            </a>
+            <a href="?filter=borrowing" class="btn btn-outline-info {% if filter_type == 'borrowing' %}active{% endif %}">
+                <i class="fas fa-book-open"></i> 借閱中
+                <span class="badge bg-info">{{ borrowing_count }}</span>
+            </a>
+            <a href="?filter=overdue" class="btn btn-outline-danger {% if filter_type == 'overdue' %}active{% endif %}">
+                <i class="fas fa-exclamation-triangle"></i> 已逾期
+                <span class="badge bg-danger">{{ overdue_count }}</span>
+            </a>
+            <a href="?filter=returned" class="btn btn-outline-success {% if filter_type == 'returned' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> 已歸還
+                <span class="badge bg-success">{{ returned_count }}</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 統計卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <small class="text-muted">當前篩選結果</small>
+                <h3 class="text-primary">{{ current_count }}</h3>
+                <small class="text-muted">項記錄</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <small class="text-muted">待收罰款</small>
+                <h4 class="text-danger">NT$ {{ total_overdue_fine }}</h4>
+                <small class="text-muted">未繳金額</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <small class="text-muted">借閱中</small>
+                <h4 class="text-info">{{ borrowing_count }}</h4>
+                <small class="text-muted">件待還</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <small class="text-muted">已逾期</small>
+                <h4 class="text-danger">{{ overdue_count }}</h4>
+                <small class="text-muted">件逾期</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 借閱紀錄表 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-table"></i> 
+        {% if filter_type == 'borrowing' %}
+            借閱中的紀錄 ({{ current_count }} 件)
+        {% elif filter_type == 'overdue' %}
+            已逾期的紀錄 ({{ current_count }} 件)
+        {% elif filter_type == 'returned' %}
+            已歸還的紀錄 ({{ current_count }} 件)
+        {% else %}
+            所有借閱紀錄 ({{ current_count }} 件)
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if borrows %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>會員</th>
+                        <th>圖書</th>
+                        <th class="text-center">借閱日期</th>
+                        <th class="text-center">應還日期</th>
+                        <th class="text-center">歸還日期</th>
+                        <th class="text-center">狀態</th>
+                        <th class="text-center">罰款</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for borrow in borrows %}
+                    <tr {% if borrow.status == 'overdue' %}class="table-danger"{% endif %}>
+                        <td>
+                            <code>#{{ borrow.pk }}</code>
+                        </td>
+                        <td>
+                            <a href="{% url 'library:member_detail' borrow.member.pk %}">
+                                <strong>{{ borrow.member.user.get_full_name|default:borrow.member.user.username }}</strong>
+                            </a>
+                            <br>
+                            <small class="text-muted">{{ borrow.member.user.email }}</small>
+                        </td>
+                        <td>
+                            <a href="{% url 'library:book_detail' borrow.book.pk %}">
+                                <strong>{{ borrow.book.title }}</strong>
+                            </a>
+                            <br>
+                            <small class="text-muted">{{ borrow.book.author }}</small>
+                        </td>
+                        <td class="text-center">
+                            {{ borrow.borrow_date|date:"Y-m-d" }}
+                        </td>
+                        <td class="text-center">
+                            <strong>{{ borrow.due_date|date:"Y-m-d" }}</strong>
+                        </td>
+                        <td class="text-center">
+                            {% if borrow.return_date %}
+                                {{ borrow.return_date|date:"Y-m-d" }}
+                            {% else %}
+                                <span class="badge bg-secondary">未還</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if borrow.status == 'borrowing' %}
+                                <span class="badge bg-info">借閱中</span>
+                            {% elif borrow.status == 'overdue' %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-exclamation-circle"></i> 逾期
+                                </span>
+                            {% elif borrow.status == 'returned' %}
+                                <span class="badge bg-success">已歸還</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if borrow.overdue_fine > 0 %}
+                                <span class="badge bg-warning" style="font-size: 0.9rem;">
+                                    NT$ {{ borrow.overdue_fine }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'library:member_detail' borrow.member.pk %}" 
+                                   class="btn btn-outline-secondary btn-sm" title="會員詳情">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                                <a href="{% url 'library:book_detail' borrow.book.pk %}" 
+                                   class="btn btn-outline-secondary btn-sm" title="圖書詳情">
+                                    <i class="fas fa-book"></i>
+                                </a>
+                                {% if borrow.status != 'returned' %}
+                                <a href="{% url 'library:borrow_return' borrow.pk %}" 
+                                   class="btn btn-outline-primary btn-sm" title="還書">
+                                    <i class="fas fa-undo"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+            <h5 class="text-muted">
+                {% if filter_type == 'borrowing' %}
+                    暫無借閱中的紀錄
+                {% elif filter_type == 'overdue' %}
+                    暫無逾期的紀錄
+                {% elif filter_type == 'returned' %}
+                    暫無已歸還的紀錄
+                {% else %}
+                    暫無借閱紀錄
+                {% endif %}
+            </h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 圖例說明 -->
+<div class="alert alert-info mt-4">
+    <i class="fas fa-info-circle"></i>
+    <strong>說明：</strong>
+    <ul class="mb-0 mt-2">
+        <li><span class="badge bg-info">借閱中</span> - 圖書已借出，未到應還日期</li>
+        <li><span class="badge bg-danger">逾期</span> - 圖書已借出，已超過應還日期</li>
+        <li><span class="badge bg-success">已歸還</span> - 圖書已歸還</li>
+        <li>罰款金額 = 逾期天數 × NT$ 10 元/天</li>
+    </ul>
+</div>
+
+<!-- 快速導航 -->
+<div class="row mt-4">
+    <div class="col-md-6 mb-3">
+        <a href="{% url 'library:inventory_dashboard' %}" class="btn btn-outline-primary w-100">
+            <i class="fas fa-chart-pie"></i> 館藏統計報表
+        </a>
+    </div>
+    <div class="col-md-6 mb-3">
+        <a href="{% url 'library:borrow_ranking' %}" class="btn btn-outline-success w-100">
+            <i class="fas fa-trophy"></i> 借閱排行榜
+        </a>
+    </div>
+</div>
+{% endblock %}

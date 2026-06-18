@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}首頁 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="fas fa-home"></i> 歡迎來到圖書借閱系統
+        </h1>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-book fa-2x mb-3" style="color: #3498db;"></i>
+                <h5 class="card-title">圖書總數</h5>
+                <p class="display-6 text-primary">{{ total_books|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-users fa-2x mb-3" style="color: #27ae60;"></i>
+                <h5 class="card-title">會員總數</h5>
+                <p class="display-6 text-success">{{ total_members|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-handshake fa-2x mb-3" style="color: #f39c12;"></i>
+                <h5 class="card-title">借閱中</h5>
+                <p class="display-6 text-warning">{{ active_borrows|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-exclamation-triangle fa-2x mb-3" style="color: #e74c3c;"></i>
+                <h5 class="card-title">逾期未還</h5>
+                <p class="display-6 text-danger">{{ overdue_borrows|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="h4 mb-3">快速操作</h2>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-plus-circle"></i> 新增圖書
+            </div>
+            <div class="card-body">
+                <p class="card-text">快速新增圖書到系統</p>
+                <a href="{% url 'library:book_create' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-arrow-right"></i> 前往
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-plus"></i> 新增會員
+            </div>
+            <div class="card-body">
+                <p class="card-text">新增會員並開通借書權限</p>
+                <a href="{% url 'library:member_create' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-arrow-right"></i> 前往
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-book-open"></i> 建立借閱
+            </div>
+            <div class="card-body">
+                <p class="card-text">紀錄會員借書</p>
+                <a href="{% url 'library:borrow_create' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-arrow-right"></i> 前往
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-undo"></i> 還書
+            </div>
+            <div class="card-body">
+                <p class="card-text">登記會員還書</p>
+                <a href="{% url 'library:borrow_search' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-arrow-right"></i> 前往
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recently Borrowed Books -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history"></i> 最近借閱
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>會員</th>
+                                <th>書籍</th>
+                                <th>借閱日期</th>
+                                <th>應還日期</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in recent_borrows %}
+                            <tr>
+                                <td>{{ record.member.name }}</td>
+                                <td>{{ record.book.title }}</td>
+                                <td>{{ record.borrow_date|date:"Y-m-d" }}</td>
+                                <td>{{ record.due_date|date:"Y-m-d" }}</td>
+                                <td>
+                                    {% if record.status == 'borrowing' %}
+                                        <span class="badge bg-info">借閱中</span>
+                                    {% elif record.status == 'returned' %}
+                                        <span class="badge bg-success">已歸還</span>
+                                    {% elif record.status == 'overdue' %}
+                                        <span class="badge bg-danger">逾期</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                                    <p>暫無借閱記錄</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

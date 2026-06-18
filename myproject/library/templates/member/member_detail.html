@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}{{ member.user.get_full_name|default:member.user.username }} - 會員詳情{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'library:home' %}">首頁</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'library:member_list' %}">會員管理</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ member.user.get_full_name|default:member.user.username }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 會員基本資訊 -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-user-circle"></i> 基本資訊
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">姓名</h6>
+                        <h4>{{ member.user.get_full_name|default:"(未設定)" }}</h4>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">帳號</h6>
+                        <h4>{{ member.user.username }}</h4>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">是否管理員</h6>
+                        {% if member.user.is_staff %}
+                            <span class="badge bg-danger" style="font-size: 1rem;">
+                                <i class="fas fa-crown"></i> 管理員
+                            </span>
+                        {% else %}
+                            <span class="badge bg-info" style="font-size: 1rem;">
+                                <i class="fas fa-user"></i> 普通會員
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">會員狀態</h6>
+                        {% if member.status == 'active' %}
+                            <span class="badge bg-success" style="font-size: 1rem;">
+                                <i class="fas fa-check-circle"></i> 正常
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger" style="font-size: 1rem;">
+                                <i class="fas fa-lock"></i> 停權
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">郵箱</h6>
+                        <p>
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:{{ member.user.email }}">{{ member.user.email }}</a>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">電話</h6>
+                        <p>
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:{{ member.phone }}">{{ member.phone }}</a>
+                        </p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">註冊日期</h6>
+                        <p>{{ member.registration_date|date:"Y-m-d H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">未繳罰款</h6>
+                        {% if member.outstanding_fine > 0 %}
+                            <p>
+                                <span class="badge bg-danger" style="font-size: 1rem;">
+                                    NT$ {{ member.outstanding_fine }}
+                                </span>
+                            </p>
+                        {% else %}
+                            <p><span class="text-success"><i class="fas fa-check"></i> 無欠款</span></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 統計資訊 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">總借書數</h6>
+                        <h2 class="text-primary">{{ total_borrows }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">目前借書中</h6>
+                        <h2 class="text-warning">{{ active_borrows }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 借閱歷史 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-history"></i> 借閱歷史
+            </div>
+            <div class="card-body">
+                {% if borrow_records %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>書籍</th>
+                                <th>借閱日期</th>
+                                <th>應還日期</th>
+                                <th>歸還日期</th>
+                                <th>狀態</th>
+                                <th>罰款</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in borrow_records %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'library:book_detail' record.book.pk %}">
+                                        <strong>{{ record.book.title }}</strong>
+                                    </a>
+                                    <br>
+                                    <small class="text-muted">作者：{{ record.book.author }}</small>
+                                </td>
+                                <td>{{ record.borrow_date|date:"Y-m-d" }}</td>
+                                <td>{{ record.due_date|date:"Y-m-d" }}</td>
+                                <td>
+                                    {% if record.return_date %}
+                                        {{ record.return_date|date:"Y-m-d" }}
+                                    {% else %}
+                                        <span class="text-muted">未還</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.status == 'borrowing' %}
+                                        <span class="badge bg-info">借閱中</span>
+                                    {% elif record.status == 'returned' %}
+                                        <span class="badge bg-success">已歸還</span>
+                                    {% elif record.status == 'overdue' %}
+                                        <span class="badge bg-danger">逾期</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.overdue_fine > 0 %}
+                                        <span class="badge bg-warning">NT$ {{ record.overdue_fine }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-2x mb-2 text-muted"></i>
+                    <p class="text-muted">暫無借閱記錄</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 側邊欄 - 操作按鈕 -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-tools"></i> 操作
+            </div>
+            <div class="card-body d-grid gap-2">
+                <a href="{% url 'library:member_edit' member.pk %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> 編輯會員資訊
+                </a>
+                <form method="post" action="{% url 'library:member_toggle_status' member.pk %}">
+                    {% csrf_token %}
+                    {% if member.status == 'active' %}
+                        <button type="submit" class="btn btn-warning w-100" 
+                                onclick="return confirm('確定要停權此會員嗎？');">
+                            <i class="fas fa-lock"></i> 停權此會員
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-success w-100" 
+                                onclick="return confirm('確定要解鎖此會員嗎？');">
+                            <i class="fas fa-unlock"></i> 解鎖此會員
+                        </button>
+                    {% endif %}
+                </form>
+                <a href="{% url 'library:member_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回列表
+                </a>
+            </div>
+        </div>
+
+        <!-- 會員狀態卡片 -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> 會員狀態
+            </div>
+            <div class="card-body">
+                <p><strong>當前狀態：</strong></p>
+                {% if member.status == 'active' %}
+                    <span class="badge bg-success" style="font-size: 1rem;">
+                        <i class="fas fa-check-circle"></i> 正常
+                    </span>
+                    <p class="mt-3 text-muted small">
+                        <i class="fas fa-lightbulb"></i>
+                        此會員可以正常借書。
+                    </p>
+                {% else %}
+                    <span class="badge bg-danger" style="font-size: 1rem;">
+                        <i class="fas fa-lock"></i> 已停權
+                    </span>
+                    <p class="mt-3 text-muted small">
+                        <i class="fas fa-lightbulb"></i>
+                        此會員無法借書，直到狀態被解鎖。
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

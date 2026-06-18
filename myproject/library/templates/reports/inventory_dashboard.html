@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}館藏統計報表 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="fas fa-chart-pie"></i> 館藏統計報表
+        </h1>
+    </div>
+</div>
+
+<!-- 主要統計卡片 -->
+<div class="row mb-4">
+    <!-- 圖書統計 -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="card-text opacity-75">總藏書量</small>
+                        <h3 class="card-title mb-0">{{ total_books }}</h3>
+                        <small class="opacity-75">册圖書</small>
+                    </div>
+                    <i class="fas fa-book fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 庫存統計 -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="card-text opacity-75">目前出借</small>
+                        <h3 class="card-title mb-0">{{ borrowed_quantity }}</h3>
+                        <small class="opacity-75">
+                            <i class="fas fa-percentage"></i> {{ borrow_rate }}%
+                        </small>
+                    </div>
+                    <i class="fas fa-boxes fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 可借館藏 -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="card-text opacity-75">可借館藏</small>
+                        <h3 class="card-title mb-0">{{ available_quantity }}</h3>
+                        <small class="opacity-75">册可借用</small>
+                    </div>
+                    <i class="fas fa-check-circle fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 未繳罰款 -->
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <small class="card-text opacity-75">未繳罰款</small>
+                        <h3 class="card-title mb-0">NT$ {{ total_outstanding_fine }}</h3>
+                        <small class="opacity-75">待收款</small>
+                    </div>
+                    <i class="fas fa-dollar-sign fa-3x opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 會員統計 -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-3" style="color: #3498db;"></i>
+                <h5 class="card-title">總會員數</h5>
+                <h2 class="display-6 text-primary">{{ total_members }}</h2>
+                <p class="text-muted mb-0">
+                    <span class="badge bg-success">{{ active_members }} 正常</span>
+                    <span class="badge bg-danger">{{ suspended_members }} 停權</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-book-open fa-2x mb-3" style="color: #f39c12;"></i>
+                <h5 class="card-title">借閱中</h5>
+                <h2 class="display-6 text-warning">{{ borrowing_count }}</h2>
+                <p class="text-muted mb-0">件待還</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-3" style="color: #e74c3c;"></i>
+                <h5 class="card-title">已逾期</h5>
+                <h2 class="display-6 text-danger">{{ overdue_count }}</h2>
+                <p class="text-muted mb-0">件逾期</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x mb-3" style="color: #27ae60;"></i>
+                <h5 class="card-title">已歸還</h5>
+                <h2 class="display-6 text-success">{{ returned_count }}</h2>
+                <p class="text-muted mb-0">件已歸還</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近活動統計 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-calendar"></i> 最近 7 天
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h5 class="text-muted">新借閱</h5>
+                        <h3 class="text-primary">{{ recent_borrows }}</h3>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-muted">新歸還</h5>
+                        <h3 class="text-success">{{ recent_returns }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar"></i> 借閱狀態分佈
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>借閱中</span>
+                            <span class="badge bg-info">{{ borrowing_count }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" style="width: {% widthratio borrowing_count total_borrows 100 %}%"></div>
+                        </div>
+                    </li>
+                    <li class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>已逾期</span>
+                            <span class="badge bg-danger">{{ overdue_count }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-danger" style="width: {% widthratio overdue_count total_borrows 100 %}%"></div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>已歸還</span>
+                            <span class="badge bg-success">{{ returned_count }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: {% widthratio returned_count total_borrows 100 %}%"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 分類統計表 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-bookmark"></i> 分類統計
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>分類</th>
+                        <th class="text-center">總數</th>
+                        <th class="text-center">可借</th>
+                        <th class="text-center">已借</th>
+                        <th>比例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in category_stats %}
+                    <tr>
+                        <td>
+                            <strong>{{ stat.category }}</strong>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">{{ stat.total }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-success">{{ stat.available }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info">{{ stat.total|add:stat.available }}</span>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                {% widthratio stat.available stat.total 100 as available_percent %}
+                                <div class="progress-bar bg-success" 
+                                     style="width: {{ available_percent }}%;"
+                                     role="progressbar" 
+                                     aria-valuenow="{{ available_percent }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ available_percent }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-3">暫無分類數據</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 圖書狀態統計 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-donut"></i> 圖書狀態分佈
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    {% for stat in status_stats %}
+                    <li class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            {% if stat.status == 'available' %}
+                                <span><i class="fas fa-check-circle" style="color: #27ae60;"></i> 上架</span>
+                                <span class="badge bg-success">{{ stat.count }}</span>
+                            {% else %}
+                                <span><i class="fas fa-times-circle" style="color: #e74c3c;"></i> 下架</span>
+                                <span class="badge bg-danger">{{ stat.count }}</span>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> 統計摘要
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2 pb-2 border-bottom">
+                        <strong>總圖書數：</strong> {{ total_books }} 本
+                    </li>
+                    <li class="mb-2 pb-2 border-bottom">
+                        <strong>總冊數：</strong> {{ total_quantity }} 冊
+                    </li>
+                    <li class="mb-2 pb-2 border-bottom">
+                        <strong>已借出：</strong> {{ borrowed_quantity }} 冊 ({{ borrow_rate }}%)
+                    </li>
+                    <li class="mb-2 pb-2 border-bottom">
+                        <strong>可借館藏：</strong> {{ available_quantity }} 冊
+                    </li>
+                    <li class="mb-2 pb-2 border-bottom">
+                        <strong>總借閱紀錄：</strong> {{ total_borrows }} 項
+                    </li>
+                    <li>
+                        <strong>未繳罰款總額：</strong> 
+                        <span class="badge bg-warning">NT$ {{ total_outstanding_fine }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速導航 -->
+<div class="row g-3">
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'library:borrow_ranking' %}" class="btn btn-outline-primary w-100" style="height: 100px; display: flex; align-items: center; justify-content: center;">
+            <div class="text-center">
+                <i class="fas fa-trophy fa-2x mb-2 d-block"></i>
+                <div>借閱排行榜</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'library:borrow_report' %}" class="btn btn-outline-info w-100" style="height: 100px; display: flex; align-items: center; justify-content: center;">
+            <div class="text-center">
+                <i class="fas fa-list fa-2x mb-2 d-block"></i>
+                <div>借閱清單</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-4 mb-3">
+        <a href="{% url 'library:search_book' %}" class="btn btn-outline-success w-100" style="height: 100px; display: flex; align-items: center; justify-content: center;">
+            <div class="text-center">
+                <i class="fas fa-search fa-2x mb-2 d-block"></i>
+                <div>搜尋圖書</div>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}搜尋圖書 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="fas fa-magnifying-glass"></i> 搜尋圖書
+        </h1>
+    </div>
+</div>
+
+<!-- 搜尋表單 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fas fa-search"></i> 查詢圖書
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-8">
+                <input type="text" name="q" class="form-control form-control-lg" 
+                       placeholder="搜尋書名、作者或 ISBN..." 
+                       value="{{ search_query }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-search"></i> 搜尋
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 搜尋結果 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 
+        {% if search_query %}
+            搜尋結果「{{ search_query }}」(共 {{ total_results }} 項)
+        {% else %}
+            全部圖書 (共 {{ total_results }} 項)
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if books %}
+        <div class="row">
+            {% for book in books %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <!-- 書名和狀態 -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title">
+                                    <a href="{% url 'library:book_detail' book.pk %}" class="text-decoration-none">
+                                        {{ book.title }}
+                                    </a>
+                                </h5>
+                            </div>
+                            {% if book.status == 'available' %}
+                                <span class="badge bg-success">上架</span>
+                            {% else %}
+                                <span class="badge bg-danger">下架</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- 作者和出版商 -->
+                        <p class="card-text">
+                            <strong>作者：</strong> {{ book.author }}<br>
+                            <strong>出版商：</strong> {{ book.publisher }}
+                        </p>
+
+                        <hr>
+
+                        <!-- 分類和 ISBN -->
+                        <p class="card-text">
+                            <strong>分類：</strong> 
+                            <span class="badge bg-info">{{ book.category }}</span><br>
+                            <strong>ISBN：</strong> <code>{{ book.isbn }}</code>
+                        </p>
+
+                        <hr>
+
+                        <!-- 庫存信息卡片 -->
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <div class="p-2 bg-light rounded">
+                                    <small class="d-block text-muted">可借用</small>
+                                    <h5 class="mb-0 text-success">
+                                        {{ book.available_quantity }}
+                                    </h5>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 bg-light rounded">
+                                    <small class="d-block text-muted">總數量</small>
+                                    <h5 class="mb-0 text-primary">
+                                        {{ book.total_quantity }}
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 進度條 -->
+                        <div class="mb-3">
+                            <small class="d-block mb-1">庫存率：{{ book.available_quantity }}/{{ book.total_quantity }}</small>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ book.available_percent }}%;"
+                                     aria-valuenow="{{ book.available_percent }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    {{ book.available_percent|floatformat:0 }}%
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 操作按鈕 -->
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'library:book_detail' book.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i> 查看詳情
+                            </a>
+                            {% if book.available_quantity > 0 and book.status == 'available' %}
+                            <a href="{% url 'library:borrow_create' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-book-open"></i> 借閱此書
+                            </a>
+                            {% else %}
+                            <button class="btn btn-secondary btn-sm" disabled>
+                                暫無可借
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+            <h5 class="text-muted">
+                {% if search_query %}
+                    找不到符合「{{ search_query }}」的圖書
+                {% else %}
+                    暫無圖書
+                {% endif %}
+            </h5>
+            <p class="text-muted">
+                {% if search_query %}
+                    請嘗試使用不同的搜尋關鍵字
+                {% else %}
+                    請先新增圖書到系統
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

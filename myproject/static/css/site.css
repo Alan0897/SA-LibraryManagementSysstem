@@ -1,0 +1,68 @@
+/* site.css - Modernized visual tweaks for the library project */
+:root{
+    --bg: #F4F6F9;
+    --text:#0f1724;
+    --muted:#526075;
+    --primary:#1e3a8a;
+    --accent:#fb923c;
+    --glass: rgba(255,255,255,0.06);
+    --card-radius:12px;
+}
+
+/* Utility tweaks */
+.container-fluid { padding-left: 1rem; padding-right:1rem; }
+
+/* Navbar refinements */
+.navbar {
+    background: linear-gradient(90deg, rgba(7,18,32,0.55), rgba(10,25,45,0.55));
+    backdrop-filter: blur(6px) saturate(120%);
+}
+.navbar .nav-link{ color: rgba(255,255,255,0.92); }
+.navbar .nav-link:hover{ color: var(--accent); transform: translateY(-2px); }
+.navbar .navbar-brand{ color:#fff; }
+
+/* Sticky subtle shadow */
+.sticky-top { box-shadow: 0 6px 18px rgba(2,6,23,0.06); }
+
+/* Cards */
+.card{ border-radius: var(--card-radius); transition: transform .25s ease, box-shadow .25s ease; }
+.card:hover{ transform: translateY(-6px); box-shadow: 0 20px 40px rgba(2,6,23,0.08); }
+.card .card-body{ padding:1.25rem; }
+
+/* Buttons */
+.btn-primary{ background: linear-gradient(180deg,var(--primary), #15306b); border: none; box-shadow:0 8px 20px rgba(30,58,138,0.12); border-radius:10px; padding:.7rem 1rem; }
+.btn-outline-light{ border-radius:10px; padding:.6rem 0.9rem; }
+.btn:focus{ box-shadow: 0 8px 24px rgba(30,58,138,0.12); }
+
+/* Carousel improvements */
+.home-carousel{ border-radius: 8px; overflow: hidden; }
+.home-carousel .carousel-bg{ transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+.home-carousel .carousel-item.active .carousel-bg{ transform: scale(1.03); }
+.home-carousel .carousel-caption{ pointer-events:none; }
+.home-carousel .caption-box{ backdrop-filter: blur(4px); }
+
+/* Caption typography */
+.home-carousel h1{ font-weight:800; letter-spacing:-0.4px; }
+.home-carousel p.lead{ opacity:.96; }
+
+/* Cards grid */
+.card-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:1.25rem; }
+
+/* Responsive spacings */
+.section { padding: 3.25rem 0; }
+.section--tight{ padding:1.25rem 0; }
+
+/* AOS helpers */
+[data-aos]{ opacity: 0; transform: translateY(8px); transition: all .6s ease; }
+[data-aos].aos-animate{ opacity:1; transform:none; }
+
+/* Footer subtle */
+footer{ background:#0b1020; color:#cbd5e1; padding:2.5rem 0; }
+
+/* Form refinements */
+.form-control{ border-radius: 10px; }
+
+/* Small devices tweaks */
+@media (max-width:768px){
+    .home-carousel .caption-box{ padding:.9rem; height:auto; }
+}

@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}還書收據 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <!-- 成功標誌或警告 -->
+        <div class="text-center mb-4">
+            {% if borrow_record.overdue_fine > 0 %}
+                <div style="font-size: 3rem; color: #ff6b6b;">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h1 class="my-3">還書成功（含罰款）</h1>
+                <p class="text-muted">該次還書產生了逾期罰款</p>
+            {% else %}
+                <div style="font-size: 3rem; color: #28a745;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h1 class="my-3">還書成功</h1>
+                <p class="text-muted">感謝您按時歸還圖書</p>
+            {% endif %}
+        </div>
+
+        <!-- 收據卡片 -->
+        <div class="card mb-4">
+            <div class="card-header {% if borrow_record.overdue_fine > 0 %}bg-warning{% else %}bg-success{% endif %}">
+                <i class="fas fa-receipt"></i> 還書收據
+            </div>
+            <div class="card-body">
+                <!-- 借閱紀錄 ID -->
+                <div class="alert alert-light">
+                    <strong>借閱紀錄 ID：</strong> #{{ borrow_record.pk }}
+                </div>
+
+                <!-- 會員資訊 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="text-muted">會員資訊</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>姓名：</strong> {{ member.user.get_full_name|default:member.user.username }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>郵箱：</strong> {{ member.user.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>電話：</strong> {{ member.phone }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- 圖書資訊 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="text-muted">圖書資訊</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>書名：</strong> {{ book.title }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>ISBN：</strong> {{ book.isbn }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>作者：</strong> {{ book.author }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>出版商：</strong> {{ book.publisher }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- 借閱期限 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="text-muted">借閱期限</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>借閱日期：</strong> {{ borrow_record.borrow_date|date:"Y-m-d" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>應還日期：</strong> {{ borrow_record.due_date|date:"Y-m-d" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>實際還書日期：</strong> {{ borrow_record.return_date|date:"Y-m-d" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>還書狀態：</strong>
+                            {% if borrow_record.status == 'returned' %}
+                                <span class="badge bg-success">按時歸還</span>
+                            {% elif borrow_record.status == 'overdue' %}
+                                <span class="badge bg-danger">逾期歸還</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- 罰款詳情 -->
+                {% if borrow_record.overdue_fine > 0 %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h5 class="text-muted">逾期罰款詳情</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>逾期天數：</strong>
+                            {{ overdue_days }} 天
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>每日罰款：</strong> NT$ 10.00</p>
+                    </div>
+                    <div class="col-12">
+                        <p class="display-6 text-danger">
+                            <strong>罰款金額：NT$ {{ borrow_record.overdue_fine }}</strong>
+                        </p>
+                        <p class="text-muted">此罰款已加入會員未繳罰款總額中。</p>
+                    </div>
+                </div>
+
+                <hr>
+                {% endif %}
+
+                <!-- 會員當前狀態 -->
+                <div class="row">
+                    <div class="col-12">
+                        <h5 class="text-muted">會員當前狀態</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>當前借書中：</strong>
+                            <span class="badge bg-info">
+                                {% with active_borrows=member.borrow_records.all %}
+                                    {% if active_borrows %}
+                                        {{ active_borrows|length }} 本
+                                    {% else %}
+                                        0 本
+                                    {% endif %}
+                                {% endwith %}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>未繳罰款總額：</strong>
+                            {% if member.outstanding_fine > 0 %}
+                                <span class="badge bg-warning">NT$ {{ member.outstanding_fine }}</span>
+                            {% else %}
+                                <span class="badge bg-success">無欠款</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="d-grid gap-2">
+            <a href="{% url 'library:home' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-arrow-left"></i> 返回首頁
+            </a>
+            <a href="{% url 'library:borrow_search' %}" class="btn btn-outline-primary">
+                <i class="fas fa-search"></i> 繼續還書
+            </a>
+            <a href="{% url 'library:member_detail' member.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-user-circle"></i> 查看會員詳情
+            </a>
+        </div>
+
+        <!-- 列印按鈕 -->
+        <div class="mt-4 text-center">
+            <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="fas fa-print"></i> 列印收據
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

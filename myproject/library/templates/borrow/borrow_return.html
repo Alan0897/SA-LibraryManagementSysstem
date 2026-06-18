@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}確認還書 - {{ book.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="page-title">
+            <i class="fas fa-undo"></i> 確認還書
+        </h1>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-book"></i> 借閱資訊
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">會員</h6>
+                        <p><strong>{{ member.user.get_full_name|default:member.user.username }}</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">郵箱</h6>
+                        <p>{{ member.user.email }}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">書名</h6>
+                        <p><strong>{{ book.title }}</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">作者</h6>
+                        <p>{{ book.author }}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">狀態</h6>
+                        <p>
+                            {% if overdue_days > 0 %}
+                                <span class="badge bg-danger">逾期歸還</span>
+                            {% else %}
+                                <span class="badge bg-success">準時歸還</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">代收罰款</h6>
+                        <p>
+                            {% if overdue_fine > 0 %}
+                                NT$ {{ overdue_fine|floatformat:0 }}
+                            {% else %}
+                                NT$ 0
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">借閱日期</h6>
+                        <p>{{ borrow_record.borrow_date|date:"Y-m-d H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">應還日期</h6>
+                        <p>
+                            {% if borrow_record.due_date < today %}
+                                <span class="badge bg-danger">已逾期</span>
+                                <strong class="text-danger">{{ borrow_record.due_date }}</strong>
+                            {% else %}
+                                {{ borrow_record.due_date }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 逾期警告 -->
+        {% if borrow_record.due_date < today %}
+        <div class="alert alert-warning mb-4">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>逾期提醒：</strong> 此借閱已逾期
+            {% with overdue_days=today|add:borrow_record.due_date %}
+            系統將根據逾期天數計算罰款（每天 NT$ 10 元）。
+            {% endwith %}
+        </div>
+        {% endif %}
+
+        <!-- 還書確認表單 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-check-circle"></i> 確認還書
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>還書提示：</strong>
+                        <ul class="mb-0">
+                            <li>系統會自動記錄還書時間為：<strong>{{ today }}</strong></li>
+                            <li>如存在逾期，罰款將自動計算並加入會員帳戶</li>
+                            <li>圖書庫存將自動增加 1</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check"></i> 確認還書
+                        </button>
+                        <a href="{% url 'library:borrow_search' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回搜尋
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 操作說明 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-book"></i> 還書流程
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>核對上述借閱資訊是否正確</li>
+                    <li>檢查該暂借圖書是否存在損壞或遺失</li>
+                    <li>點擊「確認還書」按鈕以完成還書</li>
+                    <li>系統會顯示還書收據，包括是否存在罰款</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

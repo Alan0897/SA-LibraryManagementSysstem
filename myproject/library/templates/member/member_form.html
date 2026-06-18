@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}{% if form.member %}編輯會員{% else %}新增會員{% endif %} - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="page-title">
+            {% if form.member %}
+                <i class="fas fa-edit me-2"></i> 編輯會員
+            {% else %}
+                <i class="fas fa-user-plus me-2"></i> 新增會員
+            {% endif %}
+        </h1>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-circle me-2"></i>會員與帳號資訊
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- 顯示非欄位錯誤 -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger mb-3">
+                        <strong>錯誤：</strong>
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- 帳號資訊區塊 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <i class="fas fa-lock me-2"></i>帳號資訊
+                        </div>
+                        <div class="card-body">
+                            <!-- 帳號 -->
+                            <div class="mb-3">
+                                <label for="id_username" class="form-label">
+                                    帳號 <span class="text-danger">*</span>
+                                </label>
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.username.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <small class="form-text text-muted d-block mt-1">
+                                        {{ form.username.help_text|safe }}
+                                    </small>
+                                {% endif %}
+                            </div>
+
+                            <!-- 密碼 -->
+                            <div class="mb-3">
+                                <label for="id_password" class="form-label">
+                                    {% if form.member %}新{% endif %}密碼
+                                    {% if not form.member %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {{ form.password }}
+                                {% if form.password.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.password.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <small class="form-text text-muted d-block mt-1">
+                                        {{ form.password.help_text|safe }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 個人資訊區塊 -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <i class="fas fa-user me-2"></i>個人資訊
+                        </div>
+                        <div class="card-body">
+                            <!-- 姓氏與名字 -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_last_name" class="form-label">
+                                        姓氏
+                                    </label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.last_name.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="id_first_name" class="form-label">
+                                        名字
+                                    </label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.first_name.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- 電郵 -->
+                            <div class="mb-3">
+                                <label for="id_email" class="form-label">
+                                    電郵 <span class="text-danger">*</span>
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.email.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 電話 -->
+                            <div class="mb-3">
+                                <label for="id_phone" class="form-label">
+                                    電話 <span class="text-danger">*</span>
+                                </label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.phone.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- 會員狀態 -->
+                            <div class="mb-3">
+                                <label for="id_status" class="form-label">
+                                    會員狀態 <span class="text-danger">*</span>
+                                </label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.status.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 按鈕 -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'library:member_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>取消
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if form.member %}更新{% else %}新增{% endif %}會員
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-title {
+        color: #2c3e50;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        color: white;
+        font-weight: bold;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .card-header.bg-light {
+        background-color: #ecf0f1 !important;
+        color: #2c3e50;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+    }
+
+    .form-select {
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875rem;
+    }
+
+    .text-danger {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}建立借閱紀錄 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="page-title">
+            <i class="fas fa-plus-circle"></i> 建立借閱紀錄
+        </h1>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-book-open"></i> 選擇會員和圖書
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- 會員選擇 -->
+                    <div class="mb-4">
+                        <label for="id_member" class="form-label">
+                            <strong>會員</strong> <span class="text-danger">*</span>
+                        </label>
+                        {{ form.member }}
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-lightbulb"></i>
+                            只能選擇狀態為「正常」的會員。
+                        </small>
+                        {% if form.member.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.member.errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <!-- 圖書選擇 -->
+                    <div class="mb-4">
+                        <label for="id_book" class="form-label">
+                            <strong>圖書</strong> <span class="text-danger">*</span>
+                        </label>
+                        {{ form.book }}
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-lightbulb"></i>
+                            只能選擇狀態為「上架」且有庫存的圖書。
+                        </small>
+                        {% if form.book.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.book.errors %}
+                                    {{ error }}<br>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 非字段表單錯誤 -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <strong>校驗失敗：</strong>
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- 提示信息 -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>借閱期限：</strong> 14 天
+                        <br>
+                        <strong>逾期罰款：</strong> 每天 NT$ 10 元
+                    </div>
+
+                    <!-- 提交按鈕 -->
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check"></i> 確認建立借閱紀錄
+                        </button>
+                        <a href="{% url 'library:home' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回首頁
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 快速連結 -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-undo fa-2x mb-3 text-primary"></i>
+                        <h5 class="card-title">還書</h5>
+                        <p class="card-text">登記會員還書</p>
+                        <a href="{% url 'library:borrow_search' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-arrow-right"></i> 前往
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-list fa-2x mb-3 text-success"></i>
+                        <h5 class="card-title">借閱紀錄</h5>
+                        <p class="card-text">查看借閱歷史</p>
+                        <a href="{% url 'library:borrow_report' %}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-arrow-right"></i> 前往
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

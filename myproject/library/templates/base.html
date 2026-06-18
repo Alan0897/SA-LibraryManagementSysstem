@@ -1,0 +1,556 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}圖書借閱系統{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        /* 護眼配色變數 */
+        :root {
+            --bg-color: #F4F6F9; /* 溫潤燕麥色，避免純白 */
+            --text-color: #1E293B; /* 深藍灰，非純黑 */
+            --muted-color: #374151; /* 次要文字 */
+            --title-color: #1E3A8A; /* 主要標題色 */
+            --link-color: #2B6B62; /* 低飽和度知性綠/藍 */
+            --accent-color: #D97706; /* 琥珀金，用於點綴 */
+            --card-radius: 0.75rem;
+            --base-font-size: 16px;
+            --base-line-height: 1.68;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', system-ui, -apple-system, "Segoe UI", Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: var(--base-font-size);
+            line-height: var(--base-line-height);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        /* Navbar Style */
+        .navbar {
+            background: rgba(20,24,28,0.55);
+            backdrop-filter: blur(6px) saturate(120%);
+            box-shadow: 0 6px 18px rgba(2,6,23,0.12);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            margin-left: 1rem;
+            font-weight: 600;
+            position: relative;
+            transition: color 0.18s ease, transform 0.18s ease;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .nav-link:hover {
+            color: var(--link-color);
+            transform: translateY(-1px);
+        }
+
+        .nav-link.active {
+            color: var(--link-color) !important;
+            font-weight: 700;
+        }
+
+        /* Main Container */
+        .main-container {
+            padding: 2.5rem 0;
+            min-height: calc(100vh - 240px);
+        }
+
+        .page-title {
+            margin-bottom: 1.25rem;
+            color: var(--title-color);
+            border-bottom: 3px solid rgba(30,58,138,0.06);
+            padding-bottom: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        /* Alert Messages */
+        .alert {
+            border-radius: 0.5rem;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        /* Footer Style */
+        footer {
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        footer h5 {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #ffc107;
+        }
+
+        footer a {
+            color: #e0e0e0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: #ffc107;
+        }
+
+        .footer-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 2rem;
+            padding-top: 1rem;
+        }
+
+        .social-links a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            margin-right: 0.5rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background-color: #ffc107;
+            color: var(--primary-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-link {
+                margin-left: 0;
+                padding-top: 0.5rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .main-container {
+                padding: 1rem 0;
+            }
+
+            footer {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Card Styles */
+        .card {
+            border: 0;
+            border-radius: var(--card-radius);
+            box-shadow: 0 6px 20px rgba(8,15,25,0.06);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(8,15,25,0.08);
+        }
+
+        .card-header {
+            background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            color: #091127;
+            border: none;
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
+        }
+
+        /* Button Styles */
+        .btn-primary {
+            background-color: rgba(30,58,138,0.95);
+            border-color: rgba(30,58,138,0.95);
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(30,58,138,0.06);
+        }
+
+        .btn-primary:hover {
+            background-color: rgba(30,58,138,0.86);
+            border-color: rgba(30,58,138,0.86);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-info, .btn-outline-secondary, .btn-outline-light {
+            color: var(--text-color);
+            border-radius: 0.5rem;
+        }
+
+        .btn-link-custom {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        .btn-sm {
+            font-size: 0.95rem;
+            padding: .45rem .6rem;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background-color: transparent;
+            padding: 1rem 0;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--secondary-color);
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--secondary-color);
+        }
+
+        /* Spinner */
+        .spinner-border {
+            color: var(--link-color);
+        }
+
+        /* Subtle badges */
+        .badge-soft-success {
+            background-color: rgba(34,197,94,0.08);
+            color: #059669;
+            border-radius: 0.5rem;
+            padding: 0.45rem 0.6rem;
+        }
+
+        .badge-soft-danger {
+            background-color: rgba(239,68,68,0.06);
+            color: #b91c1c;
+            border-radius: 0.5rem;
+            padding: 0.45rem 0.6rem;
+        }
+
+        /* Typography adjustments for accessibility */
+        h1, h2, h3, h4 {
+            color: var(--title-color);
+            line-height: 1.2;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        p, label, a, small, li, td, th {
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+
+        /* Form controls: larger, more comfortable */
+        .form-control {
+            font-size: 1rem;
+            line-height: 1.6;
+            padding: .75rem .9rem;
+            border-radius: 0.6rem;
+            border: 1px solid rgba(15,23,42,0.08);
+            background-color: #fff;
+        }
+
+        textarea.form-control { min-height: 120px; }
+
+        /* Inputs focus */
+        .form-control:focus {
+            box-shadow: 0 6px 18px rgba(30,58,138,0.06);
+            border-color: rgba(30,58,138,0.5);
+            outline: none;
+        }
+
+        /* Small screens */
+        @media (max-width: 576px) {
+            :root { --base-line-height: 1.6; }
+            .page-title { font-size: 1.25rem; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <!-- AOS for subtle animations -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'library:home' %}">
+                <i class="fas fa-book-open"></i> 圖書借閱系統
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <!-- 所有使用者都可以看到 -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'library:home' %}">
+                            <i class="fas fa-home"></i> 首頁
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'library:search_book' %}">
+                            <i class="fas fa-search"></i> 搜尋圖書
+                        </a>
+                    </li>
+
+                    <!-- 只有已登入的一般會員可以看到 -->
+                    {% if request.user.is_authenticated and not request.user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'library:my_borrows' %}">
+                            <i class="fas fa-book-bookmark"></i> 我的借閱
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <!-- 只有管理者可以看到 -->
+                    {% if request.user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'library:book_list' %}">
+                            <i class="fas fa-book"></i> 圖書管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'library:member_list' %}">
+                            <i class="fas fa-users"></i> 會員管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'library:borrow_create' %}">
+                            <i class="fas fa-handshake"></i> 借閱與還書
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-chart-bar"></i> 查詢與報表
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'library:inventory_dashboard' %}">
+                                    <i class="fas fa-chart-pie"></i> 館藏統計報表
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'library:borrow_ranking' %}">
+                                    <i class="fas fa-trophy"></i> 借閱排行榜
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'library:borrow_report' %}">
+                                    <i class="fas fa-list"></i> 借閱/逾期清單
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    <!-- 登入/登出/註冊按鈕 -->
+                    <li class="nav-item">
+                        {% if request.user.is_authenticated %}
+                            <span class="nav-link me-2">
+                                <i class="fas fa-user-circle"></i> {{ request.user.get_full_name|default:request.user.username }}
+                            </span>
+                        {% endif %}
+                    </li>
+                    <li class="nav-item">
+                        {% if request.user.is_authenticated %}
+                            <form method="post" action="{% url 'logout' %}" class="d-inline ms-2">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link btn btn-outline-light btn-sm">
+                                    <i class="fas fa-sign-out-alt"></i> 登出
+                                </button>
+                            </form>
+                        {% else %}
+                            <a class="nav-link btn btn-outline-light btn-sm ms-2" href="{% url 'library:register' %}">
+                                <i class="fas fa-user-plus"></i> 註冊
+                            </a>
+                            <a class="nav-link btn btn-outline-light btn-sm ms-2" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt"></i> 登入
+                            </a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <div class="container">
+            <!-- Display Django Messages -->
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        {% if message.tags == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elif message.tags == 'error' %}
+                            <i class="fas fa-times-circle me-2"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle me-2"></i>
+                        {% endif %}
+                        <span>{{ message }}</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Page Content Block -->
+            {% block content %}
+            <!-- 子模板將在此處放置內容 -->
+            {% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container-fluid">
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5><i class="fas fa-book-open"></i> 圖書借閱系統</h5>
+                    <p>提供便捷的圖書借閱服務，讓知識流動更暢通。</p>
+                </div>
+
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <h5><i class="fas fa-link"></i> 快速連結</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/">首頁</a></li>
+                        <li><a href="/admin">管理後台</a></li>
+                        <li><a href="#">常見問題</a></li>
+                        <li><a href="#">聯絡我們</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4">
+                    <h5><i class="fas fa-share-alt"></i> 社群媒體</h5>
+                    <div class="social-links">
+                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-divider">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-0">&copy; 2026 圖書借閱系統. 版權所有。</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="mb-0">
+                            <a href="#">隱私政策</a> | 
+                            <a href="#">使用條款</a> | 
+                            <a href="#">聯絡我們</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle CDN (包含 Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <!-- Site JS -->
+    <script src="{% static 'js/site.js' %}"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        // Auto-hide alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }, 5000);
+            });
+        });
+
+        // Highlight active navbar link
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentLocation = location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentLocation) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

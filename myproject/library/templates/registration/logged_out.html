@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}已登出 - 圖書借閱系統{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-check-circle text-success" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <h2 class="card-title mb-3">您已成功登出</h2>
+                    <p class="card-text text-muted mb-4">
+                        感謝您使用圖書借閱系統。歡迎再次訪問。
+                    </p>
+                    <a href="{% url 'library:home' %}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> 返回首頁
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
