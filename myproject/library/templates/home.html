@@ -212,6 +212,60 @@
                     <i class="fas fa-tachometer-alt"></i> 會員中心
                 </h2>
 
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body text-center p-4">
+                                <div class="avatar rounded-circle bg-secondary text-white mx-auto mb-3" style="width:72px;height:72px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <h5 class="mb-1">{{ request.user.get_full_name|default:request.user.username }}</h5>
+                                {% if request.user.member_profile %}
+                                <p class="text-muted small mb-2">會員編號：{{ request.user.member_profile.id }}</p>
+                                {% else %}
+                                <p class="text-muted small mb-2">會員編號：-</p>
+                                {% endif %}
+                                <div class="d-flex justify-content-center gap-3 mt-3">
+                                    <div>
+                                        <div class="h5 mb-0">{{ member_total_borrows|default:0 }}</div>
+                                        <small class="text-muted">總借閱</small>
+                                    </div>
+                                    <div>
+                                        <div class="h5 mb-0">{{ member_active_borrows|default:0 }}</div>
+                                        <small class="text-muted">進行中</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header">
+                                <i class="fas fa-fire"></i> 熱門書籍
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    {% for book in top_books %}
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="placeholder rounded" style="width:56px;height:72px;background:#e9ecef;"></div>
+                                            </div>
+                                            <div>
+                                                <a href="{% url 'library:book_detail' book.pk %}" class="text-decoration-none">
+                                                    <strong>{{ book.title }}</strong>
+                                                </a>
+                                                <div class="small text-muted">{{ book.author }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row g-4 mb-5">
                     <!-- 我的借閱 -->
                     <div class="col-md-6">

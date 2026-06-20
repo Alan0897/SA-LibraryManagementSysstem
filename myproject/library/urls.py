@@ -77,5 +77,7 @@ urlpatterns = [
     # ========== 會員個人專屬 ==========
     # 我的借閱紀錄
     path('my-borrows/', views.my_borrows, name='my_borrows'),
+    # 我的個人檔案（快速導向）
+    path('profile/', views.profile, name='profile'),
 ]
 

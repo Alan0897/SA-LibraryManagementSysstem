@@ -16,14 +16,40 @@ from .models import Book, Member, BorrowRecord
 from .forms import (BookForm, BookInventoryForm, BookStatusForm, MemberUserForm, 
                     MemberStatusForm, BorrowRecordForm, CreateBorrowForm, ReturnBorrowForm, RegisterForm)
 
+# 防止瀏覽器快取敏感頁面的 MixIn
+class NoCacheMixin:
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        return response
+
+
+def no_cache_view(view_func):
+    from functools import wraps
+
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        response = view_func(request, *args, **kwargs)
+        try:
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
+        except Exception:
+            pass
+        return response
+
+    return _wrapped
+
 
 # ========== 權限檢查Mixin與裝飾器 ==========
 
-class StaffOnlyMixin(LoginRequiredMixin, UserPassesTestMixin):
+class StaffOnlyMixin(NoCacheMixin, LoginRequiredMixin, UserPassesTestMixin):
     """
     只允許 staff 或 superuser 使用者的 Mixin
     """
-    login_url = reverse_lazy('library:login')
+    login_url = reverse_lazy('login')
     
     def test_func(self):
         return self.request.user.is_staff or self.request.user.is_superuser
@@ -54,7 +80,26 @@ def home(request):
     首頁視圖
     依據用戶身份顯示不同內容
     """
-    return render(request, 'home.html')
+    # 常見首頁資料：熱門書籍
+    top_books = Book.objects.annotate(borrow_count=Count('borrow_records')).order_by('-borrow_count')[:6]
+
+    context = {
+        'top_books': top_books,
+    }
+
+    # 若為已登入的一般會員，嘗試載入會員統計
+    if request.user.is_authenticated and not request.user.is_staff:
+        try:
+            member = request.user.member_profile
+            context.update({
+                'member_profile': member,
+                'member_total_borrows': member.borrow_records.count(),
+                'member_active_borrows': member.borrow_records.filter(status='borrowing').count(),
+            })
+        except Member.DoesNotExist:
+            pass
+
+    return render(request, 'home.html', context)
 
 
 @require_http_methods(["GET", "POST"])
@@ -252,7 +297,7 @@ def book_status_toggle(request, pk):
 
 # ========== 會員管理視圖 ==========
 
-class MemberListView(ListView):
+class MemberListView(StaffOnlyMixin, NoCacheMixin, ListView):
     """
     會員列表視圖
     顯示所有會員，支援搜尋和過濾
@@ -291,7 +336,7 @@ class MemberListView(ListView):
         return context
 
 
-class MemberDetailView(DetailView):
+class MemberDetailView(LoginRequiredMixin, UserPassesTestMixin, NoCacheMixin, DetailView):
     """
     會員詳細資訊視圖
     顯示會員完整資訊和借閱歷史
@@ -309,8 +354,19 @@ class MemberDetailView(DetailView):
         context['active_borrows'] = self.object.borrow_records.filter(status='borrowing').count()
         return context
 
+    def test_func(self):
+        # 管理員可以查看任意會員，普通會員只能查看自己的資料
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return True
+        # 非管理員只能查看與自身關聯的 Member
+        return self.get_object().user == self.request.user
 
-class MemberCreateView(StaffOnlyMixin, CreateView):
+    def handle_no_permission(self):
+        messages.error(self.request, '您沒有權限查看該會員資料。')
+        return redirect('library:home')
+
+
+class MemberCreateView(StaffOnlyMixin, NoCacheMixin, CreateView):
     """
     新增會員視圖
     提供表單新增會員和帳號（僅限管理者）
@@ -338,7 +394,7 @@ class MemberCreateView(StaffOnlyMixin, CreateView):
         return super().form_valid(form)
 
 
-class MemberUpdateView(StaffOnlyMixin, UpdateView):
+class MemberUpdateView(LoginRequiredMixin, UserPassesTestMixin, NoCacheMixin, UpdateView):
     """
     修改會員資料視圖
     編輯會員和帳號資訊（僅限管理者）
@@ -368,6 +424,16 @@ class MemberUpdateView(StaffOnlyMixin, UpdateView):
         full_name = f"{member.user.last_name}{member.user.first_name}" or member.user.username
         messages.success(self.request, f'會員「{full_name}」的資料已成功更新！')
         return redirect(self.success_url)
+
+    def test_func(self):
+        # 管理員可編輯任意會員；普通會員只能編輯自己的會員資料
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return True
+        return self.get_object().user == self.request.user
+
+    def handle_no_permission(self):
+        messages.error(self.request, '您沒有權限編輯該會員資料。')
+        return redirect('library:home')
 
 
 @staff_required
@@ -827,6 +893,7 @@ def borrow_report(request):
 
 @login_required
 @require_http_methods(["GET"])
+@no_cache_view
 def my_borrows(request):
     """
     我的借閱紀錄視圖
@@ -853,4 +920,20 @@ def my_borrows(request):
     }
     
     return render(request, 'member/my_borrows.html', context)
+
+
+@login_required
+@require_http_methods(["GET"])
+@no_cache_view
+def profile(request):
+    """
+    簡單導向使用者自己的會員詳細頁面
+    """
+    try:
+        member = request.user.member_profile
+    except Member.DoesNotExist:
+        messages.error(request, '您的會員檔案尚未建立。請聯絡管理員。')
+        return redirect('library:home')
+
+    return redirect('library:member_detail', pk=member.pk)
 

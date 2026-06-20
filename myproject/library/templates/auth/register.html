@@ -192,6 +192,22 @@
 
                         <hr class="my-4">
 
+                        <!-- 服務條款區塊（可捲動） -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-file-alt"></i> 服務條款與隱私政策
+                            </label>
+                            <div class="border rounded p-3 bg-light" style="max-height:200px; overflow:auto;">
+                                <p class="small text-muted mb-2">以下為範例條款摘要，請使用者詳閱。完整條款請點按下方連結閱讀。</p>
+                                <p class="small">1. 使用者在使用本系統時，應遵守圖書館相關規範，不得有違法或侵害他人權益之行為。</p>
+                                <p class="small">2. 系統將保存必要的個人資料以提供借閱服務，並依據隱私政策處理資料。</p>
+                                <p class="small">3. 會員應妥善保管帳號資訊，若有疑義請盡速聯絡管理者。</p>
+                                <p class="small">4. 系統保留因違反規定而停權或刪除會員之權利。</p>
+                                <hr>
+                                <p class="small text-muted">更多條款請閱讀：<a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">完整服務條款</a></p>
+                            </div>
+                        </div>
+
                         <!-- 同意條款 -->
                         <div class="mb-4">
                             <div class="form-check">
@@ -204,14 +220,8 @@
                                     required
                                 >
                                 <label class="form-check-label" for="{{ form.agree_terms.id_for_label }}">
-                                    我同意
-                                    <a href="#" target="_blank" class="text-decoration-none">
-                                        服務條款
-                                    </a>
-                                    和
-                                    <a href="#" target="_blank" class="text-decoration-none">
-                                        隱私政策
-                                    </a>
+                                    我已閱讀並同意上方之 <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" class="text-decoration-none">服務條款</a>
+                                    與 <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" class="text-decoration-none">隱私政策</a>
                                     <span class="text-danger">*</span>
                                 </label>
                             </div>
@@ -295,3 +305,22 @@
     }
 </style>
 {% endblock %}
+
+<!-- 條款 Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">服務條款與隱私政策</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>（此處請放置完整服務條款與隱私政策全文，管理員可於後端或靜態檔案更新。）</p>
+                <p>範例：本系統會依隱私政策收集與處理必要個人資料，並採取合理保護措施。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>

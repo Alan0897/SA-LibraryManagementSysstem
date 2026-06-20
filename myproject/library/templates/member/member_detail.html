@@ -194,6 +194,7 @@
                 <i class="fas fa-tools"></i> 操作
             </div>
             <div class="card-body d-grid gap-2">
+                {% if request.user.is_staff %}
                 <a href="{% url 'library:member_edit' member.pk %}" class="btn btn-primary">
                     <i class="fas fa-edit"></i> 編輯會員資訊
                 </a>
@@ -211,6 +212,13 @@
                         </button>
                     {% endif %}
                 </form>
+                {% else %}
+                {% if request.user == member.user %}
+                <a href="{% url 'library:member_edit' member.pk %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> 編輯我的資料
+                </a>
+                {% endif %}
+                {% endif %}
                 <a href="{% url 'library:member_list' %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> 返回列表
                 </a>
